@@ -1,13 +1,34 @@
-node {
-    stage('build-using-scm'){
-     echo 'build';
+pipeline{
+	agent any
+	tools {
+        maven 'M 3'
     }
-    
-    stage('test-using-scm'){
-     echo 'test';
-    }
-    
-    stage('deploy-using-scm'){
-     echo 'deploy';
-    }
+	stages{
+		stage("checkout code"){
+			steps {	
+			    script{
+						checkout([$class: 'GitSCM', 
+						branches: [[name: '*/master']], 
+						doGenerateSubmoduleConfigurations: false, 
+						extensions: [], 
+						submoduleCfg: [], 
+						userRemoteConfigs: [[credentialsId: 'mygit', url: 'https://github.com/dy7475/jenkinsfileprj.git']]])
+		
+			}}
+		}
+		stage("run build"){
+			steps {	
+			    script{
+			    echo 'build';
+			}}
+		}
+
+	}
+	post('run helm') { 
+		always {
+			script{
+ 			//your code
+			echo 'helm';
+	}}}
 }
+
