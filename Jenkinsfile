@@ -5,9 +5,10 @@ pipeline{
 			steps {	
 			    script{
 			    echo 'build';
+				checkout scm
 			}}
         
-        checkout scm
+        
 		}
 		stage('Prepare') {
 			
