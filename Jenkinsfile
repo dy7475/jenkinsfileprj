@@ -1,9 +1,13 @@
 pipeline{
 	agent any
 	stages{
+	    stage('checkout'){
+		script {
+        
+        checkout scm
+		}}
 		stage('Prepare') {
-			echo '1.Prepare Stage'
-			checkout scm
+			
 			steps {	
 			script {
 				build_tag = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
