@@ -5,7 +5,7 @@ pipeline{
 			steps {	
 			    script{
 			    echo 'build';
-				checkout scm
+				
 			}}
         
         
@@ -18,6 +18,7 @@ pipeline{
 				if (env.BRANCH_NAME != 'master') {
 					build_tag = "${env.BRANCH_NAME}-${build_tag}"
 				}
+				echo "${build_tag}"
 			}}
 		}
 		stage("run build"){
