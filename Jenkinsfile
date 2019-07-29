@@ -1,17 +1,15 @@
 pipeline{
 	agent any
 	stages{
-		stage("checkout code"){
-			steps {	
-			    script{
-						checkout([$class: 'GitSCM', 
-						branches: [[name: '*/master']], 
-						doGenerateSubmoduleConfigurations: false, 
-						extensions: [], 
-						submoduleCfg: [], 
-						userRemoteConfigs: [[credentialsId: 'mygit', url: 'https://github.com/dy7475/jenkinsfileprj.git']]])
-		
-			}}
+		stage('Prepare') {
+			echo "1.Prepare Stage"
+			checkout scm
+			script {
+				build_tag = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+				if (env.BRANCH_NAME != 'master') {
+					build_tag = "${env.BRANCH_NAME}-${build_tag}"
+				}
+			}
 		}
 		stage("run build"){
 			steps {	
