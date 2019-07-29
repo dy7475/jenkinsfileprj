@@ -2,6 +2,10 @@ pipeline{
 	agent any
 	stages{
 	    stage('checkout'){
+			steps {	
+			    script{
+			    echo 'build';
+			}}
         
         checkout scm
 		}
