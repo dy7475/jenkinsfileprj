@@ -1,4 +1,4 @@
-def label = "slave-${UUID.randomUUID().toString()}"
+﻿def label = "slave-${UUID.randomUUID().toString()}"
 
 podTemplate(label: label, containers: [
   containerTemplate(name: 'maven', image: 'maven:3.6-alpine', command: 'cat', ttyEnabled: true),
@@ -17,6 +17,9 @@ podTemplate(label: label, containers: [
 
     stage('单元测试') {
       echo "测试阶段"
+	  build_tag = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
+	  echo "${build_tag}"
+	  echo "${gitCommit}"
     }
     stage('代码编译打包') {
       container('maven') {
