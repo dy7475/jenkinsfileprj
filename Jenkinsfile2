@@ -1,0 +1,54 @@
+def dockerRegistryUrl = "172.16.12.51"
+def imageEndpoint = "chartrepo"
+def projname = env.JOB_NAME
+def image = "${dockerRegistryUrl}/${imageEndpoint}/${projname}"
+def imageTag = ""
+pipeline{
+	agent any
+	stages{
+	    stage('Clone'){
+			steps {	
+			    script{
+				checkout scm
+				build_tag = env.SVN_REVISION
+				build_name = env.BUILD_NUMBER
+				imageTag = "${build_name}-${build_tag}"
+			}}
+		}
+		stage('Mvnen') {
+			steps {	
+			script {
+				sh "mvn clean "
+				sh "echo 'spring.profiles.active=${myuserInput}' > ./src/main/resources/bootstrap.properties "
+				sh "mvn clean package -U  -Dmaven.test.skip=true -P linux"
+				echo "${myuserInput}";
+			}}
+		}
+		stage("Build"){
+			steps {	
+			  withCredentials([[$class: 'UsernamePasswordMultiBinding',
+				credentialsId: 'dockerhub',
+				usernameVariable: 'DOCKER_HUB_USER',
+				passwordVariable: 'DOCKER_HUB_PASSWORD']]) {
+				sh """
+				  docker login ${dockerRegistryUrl} -u ${DOCKER_HUB_USER} -p ${DOCKER_HUB_PASSWORD}
+				  docker build -t ${image}:${imageTag} .
+				  docker push ${image}:${imageTag}
+				  docker rmi ${image}:${imageTag}
+				  """
+			  }
+			}}
+		
+		stage("Deploy"){
+				steps {	
+					echo "${myuserInput}";
+					sh "sed -i 's/<JOB_NAME>/${projname}/' k8s.yaml"
+					sh "sed -i 's/<BUILD_TAG>/${imageTag}/' k8s.yaml"
+					sh "sed -i 's/<BRANCH_NAME>/${myuserInput}/' k8s.yaml"
+					sh "kubectl apply -f k8s.yaml"
+				}
+		}
+
+	}
+}
+
